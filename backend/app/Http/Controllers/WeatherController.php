@@ -9,24 +9,22 @@ class WeatherController extends Controller
 {
     public function getWeather(Request $request)
     {
-        // Get the city from the request, default to 'Nairobi'
         $city = $request->query('city', 'Nairobi');
-        
-        // Your API key from the .env file
         $apiKey = env('WEATHER_API_KEY');
-        
-        // Construct the API URL with the city and API key
-        $url = "http://api.weatherapi.com/v1/current.json?key={$apiKey}&q={$city}&aqi=no";
-        
-        // Make the API request to the weather API
-        $response = Http::get($url);
-        
-        // If the request is successful, return the JSON data
+
+        $response = Http::get("https://api.openweathermap.org/data/2.5/weather", [
+            'q' => $city,
+            'appid' => $apiKey,
+            'units' => 'metric',
+        ]);
+
         if ($response->successful()) {
             return response()->json($response->json());
         }
 
-        // If the request fails, return an error message
-        return response()->json(['error' => 'Unable to fetch weather data'], 500);
+        return response()->json([
+            'error' => 'Could not fetch weather data',
+            'message' => $response->json(),
+        ], $response->status());
     }
 }
